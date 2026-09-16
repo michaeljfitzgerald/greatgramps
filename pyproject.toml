@@ -1,6 +1,6 @@
 [project]
 name = "greatgramps"
-version = "0.4.2"
+version = "0.4.3"
 description = "Family tree static site generator for Gramps databases"
 authors = [
     { name = "Ben Nuttall", email = "ben@bennuttall.com" }

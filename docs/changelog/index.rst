@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.4.3 (unreleased)
+0.4.3 (2026-09-16)
 ==================
 
 * Fix people being given someone else's birth or death date when they are linked to the event
