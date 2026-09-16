@@ -2,7 +2,7 @@
 Changelog
 =========
 
-0.4.4 (unreleased)
+0.4.4 (2026-09-16)
 ==================
 
 * Fix ``ValueError`` crash when building a site from a tree where a place's coordinates are not
