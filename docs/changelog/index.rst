@@ -2,6 +2,12 @@
 Changelog
 =========
 
+0.4.4 (unreleased)
+==================
+
+* Skip images too large for Pillow to open safely (``DecompressionBombError``) with a warning
+  suggesting the image be resized, rather than failing to build the page that uses them
+
 0.4.3 (2026-09-16)
 ==================
 

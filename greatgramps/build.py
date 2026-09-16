@@ -63,15 +63,31 @@ def _clean_name_token(s):
     return re.sub(r"[^\w''-]", '', s)
 
 
+_skipped_images = set()
+
+
 def process_photo(photo, media_dir, person_id, site_root='/'):
-    """Copy or crop a photo into media_dir, return the web path."""
+    """Copy or crop a photo into media_dir, return the web path.
+
+    Returns None, with a warning, for an image too large for Pillow to open safely.
+    """
     src = photo['src']
     rect = photo['rect']
     filename = f"{person_id}_{photo['media_id']}.webp"
     dest = media_dir / filename
 
     if not dest.exists():
-        img = Image.open(src)
+        try:
+            img = Image.open(src)
+        except Image.DecompressionBombError as e:
+            if src not in _skipped_images:
+                _skipped_images.add(src)
+                limit = Image.MAX_IMAGE_PIXELS * 2
+                side = int(limit ** 0.5)
+                print(f"  WARNING: skipping {photo['media_id']} ({src}), image too large to open: "
+                      f"{str(e).rstrip('.')}. Resize it to under {limit:,} pixels "
+                      f"(e.g. {side:,} x {side:,}) to include it")
+            return None
         if rect:
             x1, y1, x2, y2 = rect
             w, h = img.size
@@ -82,6 +98,12 @@ def process_photo(photo, media_dir, person_id, site_root='/'):
         img.save(dest, quality=85)
 
     return f'{site_root}media/{filename}'
+
+
+def photos_with_urls(photos, media_dir, owner_id, site_root='/'):
+    """Process each photo and add its web path as 'url', leaving out any that could not be processed."""
+    with_urls = [{**photo, 'url': process_photo(photo, media_dir, owner_id, site_root)} for photo in photos]
+    return [photo for photo in with_urls if photo['url']]
 
 
 def surname_slug(name):
@@ -377,14 +399,10 @@ def _render_person_pages(ctx, gid, relation, by_marriage, marriage_relation=None
     children_p = get_children(db, p)
     spouses = sorted(get_spouses(db, p), key=lambda s: (s['marriage'] or {}).get('year') or 9999)
     person_ancestors = collect_ancestors(db, p)
-    photos = [
-        {**photo, 'url': process_photo(photo, media_dir, gid, config.site_root)}
-        for photo in get_photos(db, p, config.db_path)
-    ]
+    photos = photos_with_urls(get_photos(db, p, config.db_path), media_dir, gid, config.site_root)
     all_pictures = [
-        {**pic, 'url': process_photo(pic, media_dir, gid, config.site_root),
-         'page_url': base + pic['page_url'][1:] if (pic.get('page_url') or '').startswith('/') else pic.get('page_url')}
-        for pic in get_all_person_pictures(db, p, config.db_path)
+        {**pic, 'page_url': base + pic['page_url'][1:] if (pic.get('page_url') or '').startswith('/') else pic.get('page_url')}
+        for pic in photos_with_urls(get_all_person_pictures(db, p, config.db_path), media_dir, gid, config.site_root)
     ]
     occupations = get_occupations(p)
     notes = get_person_notes(db, p)
@@ -691,10 +709,7 @@ def _render_event_page(ctx, slug, event_data, relation_map):
         }])
     else:
         event_map_json = '[]'
-    photos = [
-        {**photo, 'url': process_photo(photo, media_dir, event_data['gramps_id'], config.site_root)}
-        for photo in event_data['photos']
-    ]
+    photos = photos_with_urls(event_data['photos'], media_dir, event_data['gramps_id'], config.site_root)
     event_out = events_dir / slug
     event_out.mkdir(exist_ok=True)
     couple = event_data.get('couple')
@@ -724,10 +739,9 @@ def _render_event_page(ctx, slug, event_data, relation_map):
         for pd in filter(None, event_data.get('couple') or []):
             p_obj = db.get_person_from_gramps_id(pd['gramps_id'])
             father_obj, mother_obj = get_parents(db, p_obj) if p_obj else (None, None)
-            person_photos = [
-                {**photo, 'url': process_photo(photo, media_dir, pd['gramps_id'], config.site_root)}
-                for photo in (get_photos(db, p_obj, config.db_path) if p_obj else [])
-            ]
+            person_photos = photos_with_urls(
+                get_photos(db, p_obj, config.db_path) if p_obj else [], media_dir, pd['gramps_id'], config.site_root
+            )
             couple_details.append({
                 **pd,
                 'father': person_data(db, father_obj) if father_obj else None,
