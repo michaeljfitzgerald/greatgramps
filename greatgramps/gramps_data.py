@@ -7,6 +7,7 @@ from gramps.gen.db import DBMODE_R
 from gramps.gen.lib import AttributeType
 from gramps.gen.lib.eventtype import EventType
 from gramps.gen.utils.alive import probably_alive
+from gramps.gen.utils.place import conv_lat_lon
 
 
 def event_url_slug(gramps_id):
@@ -903,13 +904,35 @@ def collect_descendant_tree(db, person, max_gen=4):
     return nodes, max_gen + 1, total_leaves
 
 
+def place_coords(place):
+    """(lat, lon) as floats, or (None, None) if the place has no coordinates Gramps can read.
+
+    Gramps lets any text be entered as a coordinate. conv_lat_lon accepts the formats Gramps
+    itself understands (decimal, degrees/minutes/seconds, N/S/E/W suffixes) and returns None
+    for anything else, so unreadable coordinates are ignored rather than breaking the build.
+    """
+    lat, lon = conv_lat_lon(place.get_latitude() or '', place.get_longitude() or '', 'D.D8')
+    if lat is None or lon is None:
+        return None, None
+    return float(lat), float(lon)
+
+
 def place_data(place):
+    lat, lon = place_coords(place)
+    if lat is None:
+        label = f"{place.get_gramps_id()} ({place.get_name().get_value()})"
+        if place.get_latitude() or place.get_longitude():
+            print(f"  WARNING: ignoring unreadable coordinates for place {label}: "
+                  f"{place.get_latitude()!r}, {place.get_longitude()!r}. "
+                  f"Enter decimal latitude and longitude in Gramps to show it on maps")
+        else:
+            print(f"  WARNING: place {label} has no coordinates, so it will not appear on maps")
     return {
         'gramps_id': place.get_gramps_id(),
         'name': place.get_name().get_value(),
         'type': str(place.get_type()),
-        'lat': place.get_latitude() or None,
-        'lon': place.get_longitude() or None,
+        'lat': lat,
+        'lon': lon,
         'parent_handles': [ref.get_reference_handle() for ref in place.get_placeref_list()],
     }
 
@@ -1022,8 +1045,7 @@ def build_event_list(db, ancestor_ids):
             db.get_media_from_handle(ref.get_reference_handle()).get_mime_type().startswith('image/')
             for ref in event.get_media_list()
         )
-        lat = float(place_obj.get_latitude()) if place_obj and place_obj.get_latitude() else None
-        lon = float(place_obj.get_longitude()) if place_obj and place_obj.get_longitude() else None
+        lat, lon = place_coords(place_obj) if place_obj else (None, None)
         grave_url = None
         if etype == int(EventType.BURIAL):
             grave_url = next((p['grave_url'] for p in all_people if p.get('grave_url')), None)

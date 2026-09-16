@@ -5,6 +5,11 @@ Changelog
 0.4.4 (unreleased)
 ==================
 
+* Fix ``ValueError`` crash when building a site from a tree where a place's coordinates are not
+  plain decimals. Coordinates are now read with Gramps's own converter, so degrees/minutes/seconds
+  and N/S/E/W forms such as ``37°46′55″N`` work, and anything Gramps can't read is ignored with a
+  warning rather than breaking the build
+* Warn about places with no coordinates, which cannot be shown on maps
 * Skip images too large for Pillow to open safely (``DecompressionBombError``) with a warning
   suggesting the image be resized, rather than failing to build the page that uses them
 
