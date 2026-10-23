@@ -14,7 +14,7 @@
         <a tal:condition="'explore' not in excluded_pages" href="${base}explore/#focus=${person['gramps_id']}" class="tab-explore">Explore</a>
       </nav>
 
-      <div class="profile-overview" tal:condition="father or mother or siblings or any(s['person'] for s in spouses) or children or person['external_links'] or occupations">
+      <div class="profile-overview" tal:condition="father or mother or siblings or any(s['person'] for s in spouses) or children or person['external_links'] or search_links or occupations">
         <div tal:condition="father or mother or siblings or spouses or children">
           <section class="parents" tal:condition="father or mother">
             <h3>Parents</h3>
@@ -95,6 +95,15 @@
             <ul>
               <li tal:repeat="link person['external_links']">
                 <a href="${link['url']}">${link['label']}</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="external-links search-links" tal:condition="search_links">
+            <h3>Find on other sites</h3>
+            <ul>
+              <li tal:repeat="link search_links">
+                <a href="${link['url']}" target="_blank" rel="noopener">Search ${link['label']}</a>
               </li>
             </ul>
           </div>

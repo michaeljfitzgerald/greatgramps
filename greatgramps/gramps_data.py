@@ -1,6 +1,7 @@
 import re
 from datetime import date
 from pathlib import Path
+from urllib.parse import urlencode
 
 from gramps.plugins.db.dbapi.sqlite import SQLite
 from gramps.gen.db import DBMODE_R
@@ -167,6 +168,44 @@ def get_grave_url(person):
         (u.get_path() for u in person.get_url_list() if str(u.get_type()).lower() == GRAVE_URL_TYPE.lower()),
         None,
     )
+
+
+PROFILE_SEARCHES = [
+    ('FamilySearch', 'https://www.familysearch.org/search/tree/results', lambda p: {
+        'q.givenName': p['given'], 'q.surname': p['surname'],
+        'q.birthLikeDate.from': p['birth_year'], 'q.birthLikeDate.to': p['birth_year'],
+        'q.birthLikePlace': p['birth_place'],
+        'q.deathLikeDate.from': p['death_year'], 'q.deathLikeDate.to': p['death_year'],
+    }),
+    ('Ancestry', 'https://www.ancestry.com/search/', lambda p: {
+        'name': f"{p['given']}_{p['surname']}".strip('_'),
+        'birth': '_'.join(str(v) for v in (p['birth_year'], p['birth_place']) if v),
+        'death': '_'.join(str(v) for v in (p['death_year'], p['death_place']) if v),
+    }),
+    ('Find a Grave', 'https://www.findagrave.com/memorial/search', lambda p: {
+        'firstname': p['given'], 'lastname': p['surname'],
+        'birthyear': p['birth_year'], 'deathyear': p['death_year'],
+    }),
+    ('WikiTree', 'https://www.wikitree.com/index.php', lambda p: {
+        'title': 'Special:SearchPerson', 'wpFirst': p['given'], 'wpLast': p['surname'],
+    }),
+]
+
+
+def profile_search_links(pdata):
+    """Search links for genealogy sites the person isn't already linked to.
+
+    Each link opens that site's search pre-filled with the person's name, years and places,
+    so relatives can find the matching profile and add it as an external link in Gramps.
+    """
+    linked = {link['label'].lower() for link in pdata['external_links']}
+    links = []
+    for label, url, params in PROFILE_SEARCHES:
+        if label.lower() in linked or not (pdata['given'] or pdata['surname']):
+            continue
+        query = urlencode({k: v for k, v in params(pdata).items() if v})
+        links.append({'label': label, 'url': f'{url}?{query}'})
+    return links
 
 
 def person_data(db, person):

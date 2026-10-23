@@ -47,6 +47,7 @@ try:
 except ImportError:
     _PDF_AVAILABLE = False
 from .gramps_data import (
+    profile_search_links,
     open_db, collect_all_people, collect_ancestors,
     get_parents, get_children, get_siblings, get_spouses, get_all_events,
     ancestors_with_distances, ancestors_with_ahnentafel, get_relation_to_me, get_common_ancestors, is_related_by_marriage, get_by_marriage_relation, relationship_path,
@@ -305,7 +306,7 @@ def _make_root_ctx(shared, root_id):
         {'href': nav_href.get(p, f'{base}{p}/'), 'label': NAV_LABELS[p]}
         for p in config.nav_pages
         if p not in excluded_pages
-    ]
+    ] + [{'href': link.url, 'label': link.label} for link in config.extra_nav_links]
     all_people = shared['all_people']
     switch_roots = [
         {'id': rid, 'name': all_people[rid]['full_name']}
@@ -444,6 +445,7 @@ def _render_person_pages(ctx, gid, relation, by_marriage, marriage_relation=None
         'person',
         page_title=f"{data['full_name']} — {config.site_title}",
         person=data,
+        search_links=profile_search_links(data) if config.profile_search_links else [],
         relation_path=relation_path,
         father={**person_data(db, father_p), 'is_ancestor': father_p.get_gramps_id() in my_ancestors and father_p.get_gramps_id() != root_id, 'is_descendant': father_p.get_gramps_id() in my_descendants, 'is_me': father_p.get_gramps_id() == root_id} if father_p else None,
         mother={**person_data(db, mother_p), 'is_ancestor': mother_p.get_gramps_id() in my_ancestors and mother_p.get_gramps_id() != root_id, 'is_descendant': mother_p.get_gramps_id() in my_descendants, 'is_me': mother_p.get_gramps_id() == root_id} if mother_p else None,

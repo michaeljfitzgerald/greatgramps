@@ -20,6 +20,11 @@ ExcludablePage = Literal[
 ]
 
 
+class NavLink(BaseModel):
+    label: str
+    url: str
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file='.env', env_prefix='greatgramps_')
 
@@ -38,6 +43,8 @@ class Config(BaseModel):
     exclude_pages: list[ExcludablePage] = []
     site_title: str = 'Family tree'
     site_root: str = '/'
+    extra_nav_links: list[NavLink] = []
+    profile_search_links: bool = False
 
     @field_validator('site_root')
     @classmethod
