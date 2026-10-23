@@ -65,6 +65,12 @@ Relative paths are resolved relative to the config file's directory.
    * - ``site_root``
      - no
      - ``/``
+   * - ``extra_nav_links``
+     - no
+     - ``[]``
+   * - ``profile_search_links``
+     - no
+     - ``false``
 
 ``db_path``
 -----------
@@ -189,3 +195,26 @@ matching subdirectory. For example, to serve the site at ``/family/``:
 
     output_dir: www/family/
     site_root: /family/
+
+``extra_nav_links``
+-------------------
+
+Extra links to add to the end of the nav bar, each with a ``label`` and a ``url``. Use this to link
+to pages that sit alongside the generated site, such as a file archive or a contact page:
+
+.. code-block:: yaml
+
+    extra_nav_links:
+    - label: Files
+      url: /family/files/
+    - label: Share
+      url: /family/share/
+
+``profile_search_links``
+------------------------
+
+When ``true``, each person's profile gets a "Find on other sites" list with search links for
+FamilySearch, Ancestry, Find a Grave and WikiTree, pre-filled with the person's name, birth and
+death years and places. A site is left out when the person already has an external link with the
+same label in Gramps, so the list shrinks as matching profiles are found and added. Defaults to
+``false``.

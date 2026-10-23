@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Unreleased
+==========
+
+* Add ``profile_search_links`` option: a "Find on other sites" list on each profile with
+  FamilySearch, Ancestry, Find a Grave and WikiTree searches pre-filled with the person's name,
+  years and places, leaving out sites the person already has an external link for
+* Add ``extra_nav_links`` option to append custom links to the nav bar
+
 0.4.4 (2026-09-16)
 ==================
 
