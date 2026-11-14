@@ -10,7 +10,7 @@
   <tal:block metal:define-slot="head_extra"></tal:block>
 </head>
 <body>
-  <header tal:condition="me_id">
+  <header tal:condition="me_id or nav_items">
     <nav>
       <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" onclick="var l=document.getElementById('nav-links');var o=l.classList.toggle('open');this.setAttribute('aria-expanded',o)">&#9776;</button>
       <div id="nav-links" class="nav-links">
@@ -23,7 +23,7 @@
             </li>
           </ul>
         </details>
-        <span class="secondary" tal:condition="python: len(switch_roots) <= 1">Viewing as ${root_first_name}</span>
+        <span class="secondary" tal:condition="python: me_id and len(switch_roots) <= 1">Viewing as ${root_first_name}</span>
       </div>
     </nav>
   </header>
