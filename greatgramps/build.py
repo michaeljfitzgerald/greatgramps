@@ -829,6 +829,9 @@ def _render_ancestor_records_page(ctx):
     root_id = ctx['root_id']
 
     ancestor_distances = ctx['me_ancestor_distances']
+    if config.all_people_pages:
+        # Everyone in one list, in tree order; the page keeps the reader's own ancestors.
+        ancestor_distances = {gid: 1 for gid in all_people if gid != root_id}
     ahnentafel = ancestors_with_ahnentafel(db, me)
 
     def _has_event(person, etype):
@@ -871,7 +874,7 @@ def _render_ancestor_records_page(ctx):
     gen_list = []
     for dist in sorted(generations):
         people = sorted(generations[dist], key=lambda r: ahnentafel.get(r['gramps_id'], 9999))
-        label = relationship_label(dist, 0).capitalize() + 's'
+        label = 'Everyone' if config.all_people_pages else relationship_label(dist, 0).capitalize() + 's'
         gen_list.append({'dist': dist, 'label': label, 'people': people})
 
     records_dir = root_dir / 'ancestor-records'
@@ -896,6 +899,9 @@ def _render_ancestor_census_page(ctx):
     root_id = ctx['root_id']
 
     ancestor_distances = ctx['me_ancestor_distances']
+    if config.all_people_pages:
+        # Everyone in one list, in tree order; the page keeps the reader's own ancestors.
+        ancestor_distances = {gid: 1 for gid in all_people if gid != root_id}
     ahnentafel = ancestors_with_ahnentafel(db, me)
     census_years = sorted(CENSUS_DATES.keys())
 
@@ -961,7 +967,7 @@ def _render_ancestor_census_page(ctx):
     gen_list = []
     for dist in sorted(generations):
         people = sorted(generations[dist], key=lambda r: ahnentafel.get(r['gramps_id'], 9999))
-        label = relationship_label(dist, 0).capitalize() + 's'
+        label = 'Everyone' if config.all_people_pages else relationship_label(dist, 0).capitalize() + 's'
         gen_list.append({'dist': dist, 'label': label, 'people': people})
 
     records_dir = root_dir / 'census-records'
@@ -1262,7 +1268,7 @@ def _make_index_map_json(ctx):
     for gid, events in person_place_events.items():
         is_anc = gid in my_ancestors
         is_desc = gid in my_descendants
-        if not (is_anc or is_desc):
+        if not (is_anc or is_desc or ctx['config'].all_people_pages):
             continue
         person = all_people[gid]
         for event in events:

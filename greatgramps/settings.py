@@ -45,6 +45,10 @@ class Config(BaseModel):
     site_root: str = '/'
     extra_nav_links: list[NavLink] = []
     profile_search_links: bool = False
+    # For sites that work out the reader's own place in the tree in the browser: the ancestor and
+    # census records pages list everyone (each row links to the person, so the page can keep only
+    # the reader's ancestors), and the home page map includes everyone's places.
+    all_people_pages: bool = False
 
     @field_validator('site_root')
     @classmethod
