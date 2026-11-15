@@ -71,6 +71,9 @@ Relative paths are resolved relative to the config file's directory.
    * - ``profile_search_links``
      - no
      - ``false``
+   * - ``all_people_pages``
+     - no
+     - ``false``
 
 ``db_path``
 -----------
@@ -218,3 +221,12 @@ FamilySearch, Ancestry, Find a Grave and WikiTree, pre-filled with the person's 
 death years and places. A site is left out when the person already has an external link with the
 same label in Gramps, so the list shrinks as matching profiles are found and added. Defaults to
 ``false``.
+
+``all_people_pages``
+--------------------
+
+For sites that work out each reader's own place in the tree in the browser rather than at build
+time. When ``true``, the Ancestor Records and Census Records pages list everyone in one table
+headed "Everyone" instead of the root person's ancestors by generation, and the home page map
+includes everyone's places. Every row and map entry still links to the person, so a script on
+the page can keep only the reader's ancestors and regroup them. Defaults to ``false``.

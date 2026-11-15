@@ -9,6 +9,8 @@ Unreleased
   FamilySearch, Ancestry, Find a Grave and WikiTree searches pre-filled with the person's name,
   years and places, leaving out sites the person already has an external link for
 * Add ``extra_nav_links`` option to append custom links to the nav bar
+* Add ``all_people_pages`` option: the records pages and the home map cover everyone, for sites
+  that pick out the reader's own ancestors in the browser
 
 0.4.4 (2026-09-16)
 ==================
